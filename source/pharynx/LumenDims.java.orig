@@ -1,0 +1,1098 @@
+/*
+ * LumenDims.java
+ *
+ * Created on December 20, 2000, 6:22 AM
+ */
+
+package pharynx;
+import java.util.*;
+
+/**
+ * An object that gives the dimensions of the C elegans pharyngeal lumen.
+ *
+ * @author leon@eatworms.swmed.edu
+ * @version 0.1
+ */
+public class LumenDims {
+    private double[] diameter;
+    private double[] isthmusDiameter;
+    private double[] corpusDiameter;
+    /*
+    private ArrayList motion;
+    private List isthmusMotion;
+    private List corpusMotion;
+     */
+    private int isthmusP = ISTHMUS_P;
+    private int isthmusA = ISTHMUS_A;
+    private int corpusP = CORPUS_P;
+    private int corpusA = CORPUS_A;
+    /** Creates new LumenDims object */
+    public LumenDims() {
+        init(0);
+    }
+    /** Creates new LumenDims object 
+     * @param option    Currently ignored.
+     */
+    public LumenDims(int option) {
+        init(option);
+    }
+    /* 
+     * All the diameter access methods make a clone of the array so that user
+     * can't screw up the original.  The motions are all unmodifiable lists, so
+     * they can be returned directly.
+     */
+    /**
+     * Get diameter of the pharyngeal lumen
+     *
+     * @return an array of lumen diameters from posterior to anterior
+     */
+    public double[] diameter() {
+        double[] d = new double[diameter.length];
+        System.arraycopy(diameter, 0, d, 0, d.length);
+        return d;
+    }
+    /**
+     * Get diameter of the isthmus lumen
+     *
+     * @return an array of lumen diameters from posterior to anterior
+     */
+    public double[] isthmusDiameter() {
+        double[] d = new double[isthmusDiameter.length];
+        System.arraycopy(isthmusDiameter, 0, d, 0, d.length);
+        return d;
+    }
+    /**
+     * Get diameter of the corpus lumen
+     *
+     * @return an array of lumen diameters from posterior to anterior
+     */
+    public double[] corpusDiameter() {
+        double[] d = new double[corpusDiameter.length];
+        System.arraycopy(corpusDiameter, 0, d, 0, d.length);
+        return d;
+    }
+    /**
+     * Get motions of the pharyngeal lumen
+     *
+     * @return a List of Lists of MotionPoints. Each element of the top level
+     *         list corresponds to one location along the anterior/posterior
+     *         axis of the pharynx. Each List of MotionPoints tells how that
+     *         particular section of lumen moves. The MotionPoints are ordered
+     *         by t.
+     */
+    // public List motion() { return new ArrayList(motion); }
+    /**
+     * Get motions of the isthmus lumen
+     *
+     * @return a List of Lists of MotionPoints. Each element of the top level
+     *         list corresponds to one location along the anterior/posterior
+     *         axis of the pharynx. Each List of MotionPoints tells how that
+     *         particular section of lumen moves. The MotionPoints are ordered
+     *         by t.
+     */
+    // public List isthmusMotion() { return new ArrayList(isthmusMotion); }
+    /**
+     * Get motions of the corpus lumen
+     *
+     * @return a List of Lists of MotionPoints. Each element of the top level
+     *         list corresponds to one location along the anterior/posterior
+     *         axis of the pharynx. Each List of MotionPoints tells how that
+     *         particular section of lumen moves. The MotionPoints are ordered
+     *         by t.
+     */
+    // public List corpusMotion() { return new ArrayList(corpusMotion); }
+    /**
+     * Posterior boundary of the isthmus
+     *
+     * The isthmus extends from subscripts isthmusP (inclusive) to isthmusA
+     * (exclusive).
+     */
+    public int isthmusP() { return(isthmusP); }
+    /**
+     * Anterior boundary of the isthmus
+     *
+     * The isthmus extends from subscripts isthmusP (inclusive) to isthmusA
+     * (exclusive).
+     */
+    public int isthmusA() { return(isthmusA); }
+    /**
+     * Posterior boundary of the corpus
+     *
+     * The corpus extends from subscripts corpusP (inclusive) to corpusA
+     * (exclusive).
+     */
+    public int corpusP() { return(corpusP); }
+    /**
+     * Anterior boundary of the corpus
+     *
+     * The corpus extends from subscripts corpusP (inclusive) to corpusA
+     * (exclusive).
+     */
+    public int corpusA() { return(corpusA); }
+    public int length() { return LENGTH; }
+    public int width() { return WIDTH; }
+    // Internal methods
+    private void init(int option) {
+        diameter = new double[DIAMETER.length];
+        isthmusDiameter = new double[ISTHMUS_A - ISTHMUS_P];
+        corpusDiameter = new double[CORPUS_A - CORPUS_P];
+        initDiameter();
+        /*
+        motion = new ArrayList(DIAMETER.length);
+        initIsthmusMotion();
+        initCorpusMotion();
+        motion.trimToSize();
+        corpusMotion = motion.subList(CORPUS_P, CORPUS_A);
+        isthmusMotion = motion.subList(ISTHMUS_P, ISTHMUS_A);
+         */
+    }
+    // copy DIAMETER to instance diameter
+    private void initDiameter() {
+        System.arraycopy(DIAMETER, 0, diameter, 0, diameter.length);
+        System.arraycopy(diameter, ISTHMUS_P,
+            isthmusDiameter, 0, 
+            isthmusDiameter.length);
+        System.arraycopy(diameter, CORPUS_P,
+            corpusDiameter, 0, 
+            corpusDiameter.length);
+    }
+    // copy CORPUS_MOTION to all of corpusMotion
+    /*
+    private void initCorpusMotion() {
+        MotionList cm = new MotionList(CORPUS_MOTION.length);
+        for(int i = 0; i < CORPUS_MOTION.length; i++) {
+            cm.add(i,
+                new MotionPoint(CORPUS_MOTION[i][0], CORPUS_MOTION[i][1]));
+        }
+        motion.addAll(CORPUS_P, Collections.nCopies(CORPUS_A - CORPUS_P, cm));
+    }
+    // interpolate between ISTHMUS_P_MOTION and ISTHMUS_A_MOTION
+    private void initIsthmusMotion() {
+        MotionList imc = new MotionList(ISTHMUS_P_MOTION.length);
+        MotionList imi = new MotionList(ISTHMUS_P_MOTION.length);
+        for(int i = 0; i < ISTHMUS_P_MOTION.length; i++) {
+            imc.add(i, new MotionPoint(
+                ISTHMUS_P_MOTION[i][0], ISTHMUS_P_MOTION[i][1]
+            ));
+            imi.add(i, new MotionPoint(
+                (ISTHMUS_A_MOTION[i][0] - ISTHMUS_P_MOTION[i][0]) / 
+                (ISTHMUS_A - ISTHMUS_P - 1),
+                (ISTHMUS_A_MOTION[i][1] - ISTHMUS_P_MOTION[i][1]) / 
+                (ISTHMUS_A - ISTHMUS_P - 1)
+            ));
+        }
+        for(int j = ISTHMUS_P; j < ISTHMUS_A; j++) {
+            MotionList imcc = new MotionList(imc.size());
+            for(int i = 0; i < imc.size(); i++) {
+                imcc.add(i, new MotionPoint(
+                    imc.getmp(i).t() + (j - ISTHMUS_P) * imi.getmp(i).t(),
+                    imc.getmp(i).r() + (j - ISTHMUS_P) * imi.getmp(i).r()
+                ));
+            }
+            motion.add(j, imcc);
+        }
+    }
+     */
+    // Isthmus is subscripts [0, 249)
+    private static final int ISTHMUS_P = 0;
+    private static final int ISTHMUS_A = 249;
+    // Corpus is subscripts [249, 862)
+    private static final int CORPUS_P = 249;
+    private static final int CORPUS_A = 862;
+    
+    private static final int LENGTH = 862;
+    private static final int WIDTH = 39;
+    // The motions of each part of the pharynx are given as a series of (t, r)
+    // pairs. t is in milliseconds. r varies from 0 = closed lumen, to
+    // 1 = fully open.
+    /*
+    private static final double[][] CORPUS_MOTION = {
+        {0, 0},
+        {167, 1},
+        {172, 0},
+        {315, 0}
+    };
+    private static final double[][] ISTHMUS_P_MOTION = {
+        {0, 0},
+        {100, 0},
+        {300, 1},
+        {305, 0},
+        {315, 0}
+    };
+    private static final double[][] ISTHMUS_A_MOTION = {
+        {0, 0},
+        {67, 0},
+        {267, 1},
+        {272, 0},
+        {315, 0}
+    };
+     */
+    /*
+     * Diameter of the pharyngeal lumen. Units are arbitrary, but are the same
+     * as the subscripts.
+     */
+    private static final double[] DIAMETER = {
+	1,
+	1,
+	1,
+	1,
+	1,
+	1,
+	1,
+	1,
+	2,
+	2,
+	2,
+	2,
+	2,
+	2,
+	2,
+	3,
+	3,
+	3,
+	3,
+	3,
+	3,
+	3,
+	3,
+	4,
+	4,
+	4,
+	4,
+	4,
+	4,
+	4,
+	5,
+	5,
+	5,
+	5,
+	5,
+	5,
+	5,
+	5,
+	6,
+	6,
+	6,
+	6,
+	6,
+	6,
+	6,
+	7,
+	7,
+	7,
+	7,
+	7,
+	7,
+	7,
+	7,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	8,
+	10,
+	11,
+	12,
+	13,
+	14,
+	15,
+	16,
+	17,
+	19,
+	20,
+	20,
+	21,
+	22,
+	23,
+	23,
+	24,
+	25,
+	25,
+	26,
+	27,
+	27,
+	28,
+	29,
+	29,
+	30,
+	30,
+	31,
+	31,
+	31,
+	32,
+	32,
+	33,
+	33,
+	34,
+	34,
+	35,
+	35,
+	35,
+	35,
+	36,
+	36,
+	36,
+	36,
+	37,
+	37,
+	37,
+	37,
+	37,
+	38,
+	38,
+	38,
+	38,
+	38,
+	38,
+	38,
+	38,
+	39,
+	39,
+	39,
+	39,
+	39,
+	39,
+	39,
+	39,
+	39,
+	39,
+	39,
+	39,
+	39,
+	38,
+	38,
+	38,
+	38,
+	38,
+	38,
+	38,
+	37,
+	37,
+	37,
+	37,
+	37,
+	37,
+	36,
+	36,
+	36,
+	35,
+	35,
+	35,
+	34,
+	34,
+	33,
+	33,
+	33,
+	32,
+	32,
+	32,
+	31,
+	31,
+	30,
+	29,
+	29,
+	28,
+	28,
+	27,
+	26,
+	26,
+	25,
+	25,
+	24,
+	23,
+	23,
+	22,
+	21,
+	20,
+	19,
+	18,
+	17,
+	17,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15,
+	15
+    };
+}
