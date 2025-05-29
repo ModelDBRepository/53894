@@ -38,11 +38,13 @@ Are these assumptions sufficient to explain the trapping and transport of bacter
 The pharyngeal lumen is triradiate. When closed, it forms a Y-shape. There’s no easy way to see it open, but it probably pulls out to an approximately triangular shape. In these pictures the size of the lumen relative to the pharynx is exaggerated. The bacterium on the left is free to move; in the two middle pictures it is trapped. Fluid can move around it in the partly closed shape.
 
 ![Geometry and motions](./handout_files/image004.gif)
+
 The picture to the left shows how I formalize the geometry and motions. The pharyngeal lumen has a maximum radius *r<sub>max</sub>* to which it can open, which varies along its length. It’s biggest in the metacorpus and smallest in the isthmus. At any given time it’s open to some radius *r*, which varies between 0 and *r<sub>max</sub>* with time. I define the opening, *o*, as the ratio of *r* to *r<sub>max</sub>*. *o* varies from 0 to 1: 0 means the lumen is closed and 1 means it’s open. A bacterium is held whenever *r* is less than the radius of the bacterium. When *r* is greater than the radius of the bacterium, the bug is free to move with the fluid.
 
 <br clear="all">
 
 ![Pharynx opening motion assumed](./handout_files/image006.gif)
+
 For the first simulation, let’s just make the simple assumption (which is approximately true) that the whole pharynx contracts and relaxes together. That’s the same as saying that *o*, although it varies with time, is the same everywhere along the length of the pharynx. To make the math simple, I assume that *o* is piecewise linear — the motion is linear with time except at a few points where it abruptly changes. I modeled it as a sawtooth with the contraction lasting 167 ms and the relaxation lasting 5 ms. (Those numbers come from videotapes.)
 
 Now all we need to do is figure out how the fluid moves. During the regular pump, the posterior isthmus remains closed, so no fluid flows through it. So as the corpus and anterior isthmus contract, the lumen has to fill with fluid flowing in through the mouth. So, the volume in ml that flows into the mouth during 1 ms has to equal the amount by which the volume of the pharyngeal lumen from the mouth to the middle of the isthmus changed in that 1 ms. The volume of a little section of the pharyngeal lumen is just the cross-sectional area of that section times its length. The way I’ve defined *o*, cross-sectional area is proportional to it. So, it’s straightforward to add up all the volume changes along the length of the pharynx to get the rate of flow into the mouth in ml/ms. In the same way, you can get the flow through any cross-section of the pharynx by adding up the volume change posterior to that point. This gives us the flow as volume/time. But to figure out how the bugs move, we need to know the flow velocity, which has units of distance/time (mm/ms). To calculate this, you just divide the flow by the cross-sectional area. (This gives the *mean* flow velocity, i.e., the rate at which an *average* water molecule moves.)
@@ -80,6 +82,7 @@ This improves performance a great deal.
 ## Fourth simulation: isthmus delayed, center flow velocity
 
 ![Center flow velocity pattern](./handout_files/image011.gif)
+
 Since the ratio of center to mean flow velocity depends on the shape of the tube, the factor 2 is actually not correct for the pharyngeal lumen. To figure out the actual pattern of flow in a tube of arbitrary shape you have to solve a differential equation called Poisson’s equation. In a lab meeting so long ago that not a single person who attended (other than me) is still here, I described a method I worked out to do this. Here’s what the solution looks like for the pharyngeal lumen at *o* = 0.3:
 
 <br clear="all">
